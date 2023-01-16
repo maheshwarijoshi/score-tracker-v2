@@ -16,13 +16,13 @@
               <div class="col-md-12">
                 <div class="content">
                   <h5>
-                    {{ selectedTeamInfo[0].home_team.full_name | titlecase }}
-                    ({{ selectedTeamInfo[0].home_team.abbreviation }})
+                    {{ selectedTeam?.team_name | titlecase }}
+                    ({{ selectedTeam?.team_abbreviation }})
                   </h5>
                   <br />
                   <h6>
-                    {{ selectedTeamInfo[0].home_team.conference | titlecase }}
-                    {{ selectedTeamInfo[0].home_team.division | titlecase }}
+                    {{ selectedTeam?.team_conference | titlecase }}
+                    {{ selectedTeam?.team_division | titlecase }}
                   </h6>
                 </div>
               </div>

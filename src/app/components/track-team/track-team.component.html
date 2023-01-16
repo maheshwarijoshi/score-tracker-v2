@@ -111,11 +111,11 @@
                 </div>
                 <h6>
                   Avg points scored:
-                  {{ this.getAvgPointsScored(team.data, team.team_id) }}
+                  {{ getAvgPoints(team.data, team.team_id, 'scored') }}
                 </h6>
                 <h6>
                   Avg points conceded:
-                  {{ this.getAvgPointsConceeded(team.data, team.team_id) }}
+                  {{ getAvgPoints(team.data, team.team_id, 'conceded') }}
                 </h6>
               </div>
             </div>

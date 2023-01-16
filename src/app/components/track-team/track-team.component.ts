@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Subscription, combineLatest } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
   TeamsList,
@@ -71,40 +71,46 @@ export class TrackTeamComponent implements OnInit, OnDestroy {
     getSelectedTeamInformation$
       .pipe(
         map((response: SelectedTeamInfo) => {
-          const teamInfo = response.data.filter(
-            (element: SelctedTeam) =>
-              element.home_team.id === teamName ||
-              element.visitor_team.id === teamName
-          );
-          const selectedTeam = {
-            ...response,
-            team_logo:
-              `${this.teamLogoUrl}${this.setTeamData(
+          if (response && response.data.length) {
+            const teamInfo = response.data.filter(
+              (element: SelctedTeam) =>
+                element.home_team.id === teamName ||
+                element.visitor_team.id === teamName
+            );
+            const selectedTeam = {
+              ...response,
+              team_logo:
+                `${this.teamLogoUrl}${this.setTeamData(
+                  teamInfo[0],
+                  'abbreviation',
+                  teamName
+                )}.png` || '',
+              team_name: this.setTeamData(teamInfo[0], 'full_name', teamName),
+              team_abbreviation: this.setTeamData(
                 teamInfo[0],
                 'abbreviation',
                 teamName
-              )}.png` || '',
-            team_name: this.setTeamData(teamInfo[0], 'full_name', teamName),
-            team_abbreviation: this.setTeamData(
-              teamInfo[0],
-              'abbreviation',
-              teamName
-            ),
-            team_conference: this.setTeamData(
-              teamInfo[0],
-              'conference',
-              teamName
-            ),
-            team_division: this.setTeamData(teamInfo[0], 'division', teamName),
-            team_id: Number(this.setTeamData(teamInfo[0], 'id', teamName)),
-          };
-          this.selectedTeamInfo.push(selectedTeam);
+              ),
+              team_conference: this.setTeamData(
+                teamInfo[0],
+                'conference',
+                teamName
+              ),
+              team_division: this.setTeamData(
+                teamInfo[0],
+                'division',
+                teamName
+              ),
+              team_id: Number(this.setTeamData(teamInfo[0], 'id', teamName)),
+            };
+            this.selectedTeamInfo.push(selectedTeam);
+            this.loading = false;
+            localStorage.setItem(
+              'scoreTrackerData',
+              JSON.stringify(this.selectedTeamInfo)
+            );
+          }
           this.loading = false;
-          localStorage.setItem(
-            'scoreTrackerData',
-            JSON.stringify(this.selectedTeamInfo)
-          );
-          console.log(teamInfo, this.selectedTeamInfo);
         })
       )
       .subscribe();
@@ -125,34 +131,23 @@ export class TrackTeamComponent implements OnInit, OnDestroy {
     );
   }
 
-  getAvgPointsScored(teamData, teamId): number {
+  getAvgPoints(teamData, teamId, type): number {
     let totalPoints = 0;
     let numberOfGames = 0;
+    let totalConcededPoints = 0;
     for (const game of teamData) {
       if (teamId === game.home_team.id) {
         totalPoints += game.home_team_score;
+        totalConcededPoints += game.visitor_team_score;
       } else if (teamId === game.visitor_team.id) {
         totalPoints += game.visitor_team_score;
+        totalConcededPoints += game.home_team_score;
       }
       numberOfGames++;
     }
     const averagePoints = totalPoints / numberOfGames;
-    return averagePoints;
-  }
-
-  getAvgPointsConceeded(teamData, teamId): number {
-    let totalPoints = 0;
-    let numberOfGames = 0;
-    for (const game of teamData) {
-      if (teamId === game.home_team.id) {
-        totalPoints += game.visitor_team_score;
-      } else if (teamId === game.visitor_team.id) {
-        totalPoints += game.home_team_score;
-      }
-      numberOfGames++;
-    }
-    const averagePoints = totalPoints / numberOfGames;
-    return averagePoints;
+    const averagePointsConceded = totalConcededPoints / numberOfGames;
+    return type === 'scored' ? averagePoints : averagePointsConceded;
   }
 
   getResultInfo(teamData, teamId): string {

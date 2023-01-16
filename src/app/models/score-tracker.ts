@@ -55,3 +55,10 @@ export interface SelectedTeamInfo {
   team_division: string;
   team_id: number;
 }
+
+export interface Team {
+  team_name: string;
+  team_abbreviation: string;
+  team_conference: string;
+  team_division: string;
+}
