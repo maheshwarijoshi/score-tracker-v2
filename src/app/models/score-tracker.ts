@@ -38,7 +38,6 @@ export interface SelctedTeam {
   time: string;
   visitor_team: TeamType;
   visitor_team_score: number;
-  team_logo: string;
 }
 
 export interface AllTeamsList {
@@ -49,4 +48,10 @@ export interface AllTeamsList {
 export interface SelectedTeamInfo {
   data: SelctedTeam[];
   meta: PageInformation;
+  team_logo: string;
+  team_name: string;
+  team_abbreviation: string;
+  team_conference: string;
+  team_division: string;
+  team_id: number;
 }

@@ -35,3 +35,23 @@ span {
 .logo {
   max-width: 150px;
 }
+
+.dot {
+  height: 25px;
+  width: 25px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  margin-right: 5px;
+}
+
+.W {
+  background-color: green !important;
+  padding: 5px;
+}
+
+.L {
+  background-color: red !important;
+  padding: 8px;
+}

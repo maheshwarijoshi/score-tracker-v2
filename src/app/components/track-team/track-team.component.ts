@@ -18,7 +18,7 @@ import { ScoreTrackerService } from '../../services/score-tracker.service';
 export class TrackTeamComponent implements OnInit, OnDestroy {
   scoreTrackerFormGroup: FormGroup;
   teamsList: TeamsList[] = [];
-  selectedTeamInfo: SelctedTeam[] = [];
+  selectedTeamInfo: SelectedTeamInfo[] = [];
   teamLogoUrl: string = 'https://interstate21.com/nba-logos/';
   loading: boolean = false;
   subscription: Subscription = new Subscription();
@@ -54,17 +54,49 @@ export class TrackTeamComponent implements OnInit, OnDestroy {
     this.trackTeams();
   }
 
+  setTeamData(team, key, id): string {
+    return team.home_team.id === id
+      ? team.home_team[key]
+      : team.visitor_team[key];
+  }
+
   trackTeams(): void {
     this.loading = true;
     const { teamName } = this.scoreTrackerFormGroup.value;
+    if (!teamName) {
+      return;
+    }
     const getSelectedTeamInformation$ =
       this.scoreTrackerService.getSelectedTeamInformation(teamName);
     getSelectedTeamInformation$
       .pipe(
         map((response: SelectedTeamInfo) => {
+          const teamInfo = response.data.filter(
+            (element: SelctedTeam) =>
+              element.home_team.id === teamName ||
+              element.visitor_team.id === teamName
+          );
           const selectedTeam = {
-            ...response.data[0],
-            team_logo: `${this.teamLogoUrl}${response.data[0].home_team.abbreviation}.png`,
+            ...response,
+            team_logo:
+              `${this.teamLogoUrl}${this.setTeamData(
+                teamInfo[0],
+                'abbreviation',
+                teamName
+              )}.png` || '',
+            team_name: this.setTeamData(teamInfo[0], 'full_name', teamName),
+            team_abbreviation: this.setTeamData(
+              teamInfo[0],
+              'abbreviation',
+              teamName
+            ),
+            team_conference: this.setTeamData(
+              teamInfo[0],
+              'conference',
+              teamName
+            ),
+            team_division: this.setTeamData(teamInfo[0], 'division', teamName),
+            team_id: Number(this.setTeamData(teamInfo[0], 'id', teamName)),
           };
           this.selectedTeamInfo.push(selectedTeam);
           this.loading = false;
@@ -72,6 +104,7 @@ export class TrackTeamComponent implements OnInit, OnDestroy {
             'scoreTrackerData',
             JSON.stringify(this.selectedTeamInfo)
           );
+          console.log(teamInfo, this.selectedTeamInfo);
         })
       )
       .subscribe();
@@ -90,6 +123,44 @@ export class TrackTeamComponent implements OnInit, OnDestroy {
       'scoreTrackerData',
       JSON.stringify(this.selectedTeamInfo)
     );
+  }
+
+  getAvgPointsScored(teamData, teamId): number {
+    let totalPoints = 0;
+    let numberOfGames = 0;
+    for (const game of teamData) {
+      if (teamId === game.home_team.id) {
+        totalPoints += game.home_team_score;
+      } else if (teamId === game.visitor_team.id) {
+        totalPoints += game.visitor_team_score;
+      }
+      numberOfGames++;
+    }
+    const averagePoints = totalPoints / numberOfGames;
+    return averagePoints;
+  }
+
+  getAvgPointsConceeded(teamData, teamId): number {
+    let totalPoints = 0;
+    let numberOfGames = 0;
+    for (const game of teamData) {
+      if (teamId === game.home_team.id) {
+        totalPoints += game.visitor_team_score;
+      } else if (teamId === game.visitor_team.id) {
+        totalPoints += game.home_team_score;
+      }
+      numberOfGames++;
+    }
+    const averagePoints = totalPoints / numberOfGames;
+    return averagePoints;
+  }
+
+  getResultInfo(teamData, teamId): string {
+    if (teamId === teamData.home_team.id) {
+      return teamData.home_team_score > teamData.visitor_team_score ? 'W' : 'L';
+    } else if (teamId === teamData.visitor_team.id) {
+      return teamData.visitor_team_score > teamData.home_team_score ? 'W' : 'L';
+    }
   }
 
   ngOnDestroy(): void {

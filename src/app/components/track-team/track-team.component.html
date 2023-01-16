@@ -84,14 +84,12 @@
           <div class="col-md-12">
             <div class="content">
               <h5>
-                {{ team.home_team.full_name | titlecase }} ({{
-                  team.home_team.abbreviation
-                }})
+                {{ team.team_name | titlecase }} ({{ team.team_abbreviation }})
               </h5>
               <br />
               <h6>
-                {{ team.home_team.conference | titlecase }}
-                {{ team.home_team.division | titlecase }}
+                {{ team.team_conference | titlecase }}
+                {{ team.team_division | titlecase }}
               </h6>
             </div>
           </div>
@@ -101,10 +99,24 @@
               <div class="content">
                 <h6>Results of past 12 days</h6>
                 <div class="row mr-5">
-                  <ng-container> </ng-container>
+                  <ng-container
+                    *ngFor="let teamData of team.data; let ind = index"
+                  >
+                    <div
+                      class="dot {{ getResultInfo(teamData, team.team_id) }}"
+                    >
+                      {{ getResultInfo(teamData, team.team_id) }}
+                    </div>
+                  </ng-container>
                 </div>
-                <h6>Avg points scored: {{ team.home_team_score }}</h6>
-                <h6>Avg points conceded: {{ team.visitor_team_score }}</h6>
+                <h6>
+                  Avg points scored:
+                  {{ this.getAvgPointsScored(team.data, team.team_id) }}
+                </h6>
+                <h6>
+                  Avg points conceded:
+                  {{ this.getAvgPointsConceeded(team.data, team.team_id) }}
+                </h6>
               </div>
             </div>
             <div class="col-md-5 col-sm-12 col-5">
@@ -115,7 +127,7 @@
         <div class="row">
           <div class="col-md-6 btn-section">
             <a
-              routerLink="/results/{{ team.home_team.id }}"
+              routerLink="/results/{{ team.team_id }}"
               class="btn btn-dark"
               routerLinkActive="active"
             >
